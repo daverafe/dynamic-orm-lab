@@ -1,4 +1,5 @@
 require_relative "../config/environment.rb"
+require 'pry'
 require 'active_support/inflector'
 
 class InteractiveRecord
@@ -41,6 +42,7 @@ class InteractiveRecord
   def save
     sql = "INSERT INTO #{table_name_for_insert} (#{col_names_for_insert}) VALUES (#{values_for_insert})"
     DB[:conn].execute(sql) 
+    # binding.pry 
     @id = DB[:conn].execute("SELECT last_insert_rowid() FROM #{table_name_for_insert}")[0][0]
   end
 
@@ -50,9 +52,21 @@ class InteractiveRecord
   end
 
   def self.find_by(attribute)
-    sql = "SELECT * FROM #{self.table_name} WHERE '#{self.column_names}' = ?"
-    DB[:conn].execute(sql, "#{self.column_names}") 
+    # binding.pry 
+    value = attribute.values.first
+    if value != Fixnum
+        sql = "SELECT * FROM #{self.table_name} WHERE #{attribute.keys.first} = '#{value}'"
+        DB[:conn].execute(sql)
+    else
+        sql = "SELECT * FROM #{self.table_name} WHERE #{attribute.keys.first} = #{value}"
+        DB[:conn].execute(sql)
+    end
   end
-
   
 end
+
+
+# value = attribute_hash.values.first     
+# formatted_value = value.class == Fixnum ? value : "'#{value}'"     
+# sql = "SELECT * FROM #{self.table_name} WHERE #{attribute_hash.keys.first} = #{formatted_value}"     
+# DB[:conn].execute(sql)
